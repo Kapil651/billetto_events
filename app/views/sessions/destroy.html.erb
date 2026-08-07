@@ -1,0 +1,26 @@
+<% content_for :title, "Sign out" %>
+
+<main class="auth-page">
+  <section class="auth-card">
+    <h1 class="auth-card__title">Signing out</h1>
+    <p class="auth-card__subtitle">You are being signed out...</p>
+  </section>
+</main>
+
+<% if clerk_configured? %>
+  <script>
+    window.addEventListener("load", async function () {
+      if (typeof Clerk === "undefined") {
+        window.location.href = "<%= root_path %>";
+        return;
+      }
+
+      await Clerk.load();
+      await Clerk.signOut({ redirectUrl: "<%= root_path %>" });
+    });
+  </script>
+<% else %>
+  <script>
+    window.location.href = "<%= root_path %>";
+  </script>
+<% end %>

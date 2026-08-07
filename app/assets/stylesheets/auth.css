@@ -1,0 +1,101 @@
+.site-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+.site-nav__logo {
+  color: #111827;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.site-nav__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.site-nav__welcome {
+  color: #4b5563;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size: 0.875rem;
+}
+
+.site-nav__link {
+  color: #4338ca;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.site-nav__link--button {
+  padding: 0.45rem 0.9rem;
+  border: 1px solid #c7d2fe;
+  border-radius: 999px;
+  background: #eef2ff;
+}
+
+.site-nav__user-button {
+  display: flex;
+  align-items: center;
+}
+
+.auth-page {
+  display: grid;
+  place-items: center;
+  min-height: calc(100vh - 4.5rem);
+  padding: 2rem 1.5rem;
+  background: #f9fafb;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 28rem;
+  padding: 2rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 1rem;
+  background: #ffffff;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+
+.auth-card__title {
+  margin: 0;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size: 1.75rem;
+}
+
+.auth-card__subtitle {
+  margin: 0.5rem 0 1.5rem;
+  color: #6b7280;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+.auth-card__footer {
+  margin: 1.5rem 0 0;
+  color: #4b5563;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.auth-card__message {
+  margin: 0;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  background: #fef3c7;
+  color: #92400e;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size: 0.95rem;
+}
+
+.auth-card__message code {
+  font-size: 0.85rem;
+}

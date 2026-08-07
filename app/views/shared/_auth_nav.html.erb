@@ -1,0 +1,41 @@
+<nav class="site-nav" aria-label="Account">
+  <div class="site-nav__brand">
+    <%= link_to "Tacnique Kapil", root_path, class: "site-nav__logo" %>
+  </div>
+
+  <div class="site-nav__actions">
+    <% if clerk.user? %>
+      <span class="site-nav__welcome">
+        Hello, <%= clerk.user&.first_name.presence || "there" %>
+      </span>
+      <div id="clerk-user-button" class="site-nav__user-button"></div>
+      <%= link_to "Sign out", sign_out_path, class: "site-nav__link site-nav__link--button", data: { turbo: false } %>
+    <% else %>
+      <%= link_to "Sign in", sign_in_path, class: "site-nav__link" %>
+      <%= link_to "Sign up", sign_up_path, class: "site-nav__link site-nav__link--button" %>
+    <% end %>
+  </div>
+</nav>
+
+<% if clerk_configured? %>
+  <script>
+    window.addEventListener("load", async function () {
+      if (typeof Clerk === "undefined") return;
+
+      await Clerk.load();
+
+      const userButton = document.getElementById("clerk-user-button");
+      if (userButton && Clerk.user) {
+        Clerk.mountUserButton(userButton);
+      }
+
+      const signOutLink = document.querySelector('a[href="<%= sign_out_path %>"]');
+      if (signOutLink) {
+        signOutLink.addEventListener("click", function (event) {
+          event.preventDefault();
+          Clerk.signOut({ redirectUrl: "<%= root_path %>" });
+        });
+      }
+    });
+  </script>
+<% end %>

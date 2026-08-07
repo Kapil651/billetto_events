@@ -58,3 +58,5 @@ group :test do
   gem "capybara"
   gem "selenium-webdriver"
 end
+
+gem "clerk-sdk-ruby", "~> 4.2", :require => "clerk"

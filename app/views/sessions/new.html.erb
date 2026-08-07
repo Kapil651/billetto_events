@@ -1,0 +1,32 @@
+<% content_for :title, "Sign in" %>
+
+<main class="auth-page">
+  <section class="auth-card">
+    <h1 class="auth-card__title">Sign in</h1>
+    <p class="auth-card__subtitle">Access your account to manage events.</p>
+
+    <% if clerk_configured? %>
+      <div id="clerk-sign-in"></div>
+    <% else %>
+      <p class="auth-card__message">Clerk is not configured. Add your API keys to <code>config/application.yml</code>.</p>
+    <% end %>
+
+    <p class="auth-card__footer">
+      New here? <%= link_to "Create an account", sign_up_path %>
+    </p>
+  </section>
+</main>
+
+<% if clerk_configured? %>
+  <script>
+    window.addEventListener("load", async function () {
+      if (typeof Clerk === "undefined") return;
+
+      await Clerk.load();
+      Clerk.mountSignIn(document.getElementById("clerk-sign-in"), {
+        signUpUrl: "<%= sign_up_path %>",
+        afterSignInUrl: "<%= root_path %>"
+      });
+    });
+  </script>
+<% end %>

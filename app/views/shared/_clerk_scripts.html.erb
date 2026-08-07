@@ -1,0 +1,9 @@
+<% if clerk_configured? && clerk_frontend_api_host.present? %>
+  <script
+    async
+    crossorigin="anonymous"
+    data-clerk-publishable-key="<%= clerk_publishable_key %>"
+    src="https://<%= clerk_frontend_api_host %>/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
+    type="text/javascript"
+  ></script>
+<% end %>
