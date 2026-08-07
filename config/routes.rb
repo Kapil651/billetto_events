@@ -11,7 +11,9 @@ Rails.application.routes.draw do
 
   root "events#index"
 
-  resources :events, only: :index
+  resources :events, only: :index do
+    resource :vote, only: :create, controller: "event_votes"
+  end
 
   get "sign-in", to: "sessions#new", as: :sign_in
   get "sign-up", to: "sessions#sign_up", as: :sign_up

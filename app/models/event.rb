@@ -8,6 +8,8 @@ class Event < ApplicationRecord
     order(Arel.sql("(raw_payload->>'starts_at') ASC NULLS LAST"), created_at: :desc)
   }
 
+  has_many :event_votes, dependent: :destroy
+
   def self.upsert_from_billetto!(data)
     validated = Billetto::EventValidator.validate!(data)
 
@@ -59,5 +61,15 @@ class Event < ApplicationRecord
     return "No description available." if description.blank?
 
     description.length > limit ? "#{description[0...limit].strip}..." : description
+  end
+
+  def score
+    upvotes_count - downvotes_count
+  end
+
+  def user_vote(user_id)
+    return if user_id.blank?
+
+    event_votes.find_by(user_id: user_id)&.vote_type
   end
 end

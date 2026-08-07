@@ -25,6 +25,8 @@ class EventsControllerTest < ActionDispatch::IntegrationTest
     assert_select ".event-card__title", text: "Jazz Night"
     assert_match "An evening of live jazz", response.body
     assert_match "https://example.com/jazz.jpg", response.body
+    assert_select ".event-card__vote-count--up", text: /▲ 0/
+    assert_select ".event-card__vote-count--down", text: /▼ 0/
   end
 
   test "index shows empty state when no events exist" do

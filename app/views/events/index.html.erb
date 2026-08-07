@@ -31,6 +31,41 @@
 
             <h2 class="event-card__title"><%= event.title %></h2>
             <p class="event-card__description"><%= event.brief_description %></p>
+
+            <div class="event-card__votes" aria-label="Event votes">
+              <div class="event-card__vote-counts">
+                <span class="event-card__vote-count event-card__vote-count--up" title="Upvotes">
+                  ▲ <%= event.upvotes_count %>
+                </span>
+                <span class="event-card__vote-count event-card__vote-count--down" title="Downvotes">
+                  ▼ <%= event.downvotes_count %>
+                </span>
+                <span class="event-card__vote-score" title="Score">
+                  Score: <%= event.score %>
+                </span>
+              </div>
+
+              <% if clerk.user? %>
+                <div class="event-card__vote-actions">
+                  <%= button_to "Like",
+                        event_vote_path(event),
+                        method: :post,
+                        params: { vote_type: "up" },
+                        class: "event-card__vote-button #{'event-card__vote-button--active' if event.user_vote(clerk.user_id) == EventVote::UPVOTE}",
+                        form: { class: "event-card__vote-form" } %>
+                  <%= button_to "Dislike",
+                        event_vote_path(event),
+                        method: :post,
+                        params: { vote_type: "down" },
+                        class: "event-card__vote-button #{'event-card__vote-button--active' if event.user_vote(clerk.user_id) == EventVote::DOWNVOTE}",
+                        form: { class: "event-card__vote-form" } %>
+                </div>
+              <% else %>
+                <p class="event-card__vote-signin">
+                  <%= link_to "Sign in", sign_in_path %> to vote on this event.
+                </p>
+              <% end %>
+            </div>
           </div>
         </article>
       <% end %>

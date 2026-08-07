@@ -60,3 +60,5 @@ group :test do
 end
 
 gem "clerk-sdk-ruby", "~> 4.2", :require => "clerk"
+
+gem "rails_event_store", "~> 3.0"
