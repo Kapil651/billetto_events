@@ -1,0 +1,12 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  username: postgres
+  password: postgres
+  host: localhost
+  port: 5432
+  pool: 5
+
+development:
+  <<: *default
+  database: tacnique-dev
