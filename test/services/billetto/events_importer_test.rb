@@ -61,7 +61,7 @@ class Billetto::EventsImporterTest < ActiveSupport::TestCase
 
     importer = Billetto::EventsImporter.new(fetcher: fetcher)
 
-    assert_equal 2, importer.import_all
+    assert_equal 2, importer.import_all.imported
     assert_equal 2, Event.count
     assert_equal "Winter Show", Event.find_by(billetto_id: "evt_2").name
     assert_equal [ [ :fetch_events, {} ], [ :fetch_events_from_url, "https://billetto.dk/api/v3/organiser/events?page=2" ] ], fetcher.calls
@@ -88,6 +88,25 @@ class Billetto::EventsImporterTest < ActiveSupport::TestCase
 
     assert_equal 1, Event.count
     assert_equal "Second Import", Event.first.name
+  end
+
+  test "import_all reports api total when no events exist" do
+    fetcher = FakeFetcher.new(
+      [
+        {
+          events: [],
+          has_more: false,
+          next_url: nil,
+          total: 0
+        }
+      ]
+    )
+
+    result = Billetto::EventsImporter.new(fetcher: fetcher).import_all
+
+    assert result.empty?
+    assert_equal 0, result.imported
+    assert_equal 0, result.api_total
   end
 
   test "import_event persists a single event" do

@@ -18,6 +18,8 @@ module Billetto
         raise Billetto::ValidationError.new("Event must be a hash", details: [ "expected Hash, got #{event.class}" ])
       end
 
+      normalize_id!
+
       validate_presence!("id", event["id"])
       validate_string!("id", event["id"])
       validate_presence!("object", event["object"])
@@ -36,6 +38,12 @@ module Billetto
     private
 
     attr_reader :event, :details
+
+    def normalize_id!
+      return if event["id"].blank?
+
+      event["id"] = event["id"].to_s
+    end
 
     def validate_presence!(field, value)
       return if value.present?

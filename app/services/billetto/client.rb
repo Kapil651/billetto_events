@@ -60,7 +60,12 @@ module Billetto
       when Net::HTTPSuccess
         body
       when Net::HTTPUnauthorized
-        raise Billetto::RequestError.new("Invalid Billetto API credentials", status: response.code.to_i, body: body)
+        detail = extract_error_message(body) || "Invalid credentials"
+        raise Billetto::RequestError.new(
+          "Invalid Billetto API credentials (#{detail}). Check BILLETTO_ACCESS_KEY_ID and BILLETTO_ACCESS_KEY_SECRET in config/application.yml and regenerate keys in Billetto if needed.",
+          status: response.code.to_i,
+          body: body
+        )
       when Net::HTTPTooManyRequests
         raise Billetto::RequestError.new("Billetto API rate limit exceeded", status: response.code.to_i, body: body)
       else
@@ -79,6 +84,9 @@ module Billetto
 
     def extract_error_message(body)
       return unless body.is_a?(Hash)
+
+      nested = body["error"]
+      return nested["message"] if nested.is_a?(Hash) && nested["message"].present?
 
       body["message"] || body["error"]
     end

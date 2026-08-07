@@ -124,6 +124,60 @@ bin/rails test:system test/system/voting_system_test.rb
 
 ---
 
+## Troubleshooting
+
+### `Invalid Billetto API credentials (Billetto::RequestError)`
+
+Billetto returned **HTTP 401**. The app is sending credentials, but Billetto rejected them.
+
+1. Log in to your [Billetto organiser account](https://billetto.dk).
+2. Go to **Menu → Integrate → Developers**.
+3. Create a **new API key pair** (or confirm the existing one is active).
+4. Update `config/application.yml`:
+   ```yaml
+   development:
+     BILLETTO_ACCESS_KEY_ID: your_key_id
+     BILLETTO_ACCESS_KEY_SECRET: your_key_secret
+   ```
+5. Restart the Rails server (env vars load at boot).
+6. Verify:
+   ```bash
+   bin/rails billetto:verify_credentials
+   ```
+
+Common causes: revoked/regenerated keys, copy-paste errors, or keys from a different Billetto account.
+
+### `import_all` returns 0 records
+
+If credentials work but nothing imports, the Billetto API is returning an empty list:
+
+```json
+{ "data": [], "total": 0, "has_more": false }
+```
+
+This means the **organiser account linked to your API keys has no events yet**. The importer is working; there is simply nothing to fetch.
+
+1. Confirm what Billetto returns:
+   ```bash
+   bin/rails billetto:verify_credentials
+   bin/rails billetto:import_events
+   ```
+2. Create at least one event in your [Billetto organiser dashboard](https://billetto.dk).
+3. Re-run import:
+   ```ruby
+   Billetto::EventsImporter.new.import_all
+   # => #<struct imported=1, api_total=1, pages=1>
+   ```
+
+In Rails console, check the API response directly:
+
+```ruby
+Billetto::EventsFetcher.new.fetch_events
+# => { events: [], has_more: false, total: 0, ... }
+```
+
+---
+
 ## Approach & Design
 
 ### Event ingestion (Billetto)
