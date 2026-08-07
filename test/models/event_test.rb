@@ -68,4 +68,21 @@ class EventTest < ActiveSupport::TestCase
     assert_not duplicate.valid?
     assert_includes duplicate.errors[:billetto_id], "has already been taken"
   end
+
+  test "presentation helpers read from raw payload" do
+    event = Event.new(
+      billetto_id: "evt_456",
+      name: "Art Expo",
+      raw_payload: {
+        "description" => "A" * 200,
+        "starts_at" => "2026-10-01T18:00:00.000Z",
+        "image_url" => "https://example.com/art.png"
+      }
+    )
+
+    assert_equal "Art Expo", event.title
+    assert_equal "https://example.com/art.png", event.image_url
+    assert_includes event.formatted_date, "2026"
+    assert event.brief_description.end_with?("...")
+  end
 end
