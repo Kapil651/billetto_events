@@ -10,3 +10,7 @@ default: &default
 development:
   <<: *default
   database: tacnique-dev
+
+test:
+  <<: *default
+  database: tacnique-test
