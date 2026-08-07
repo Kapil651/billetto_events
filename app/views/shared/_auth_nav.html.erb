@@ -6,7 +6,7 @@
   <div class="site-nav__actions">
     <% if clerk.user? %>
       <span class="site-nav__welcome">
-        Hello, <%= clerk.user&.first_name.presence || "there" %>
+        Signed in
       </span>
       <div id="clerk-user-button" class="site-nav__user-button"></div>
       <%= link_to "Sign out", sign_out_path, class: "site-nav__link site-nav__link--button", data: { turbo: false } %>

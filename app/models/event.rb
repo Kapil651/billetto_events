@@ -4,6 +4,8 @@ class Event < ApplicationRecord
   validates :kind, inclusion: { in: Billetto::EventValidator::EVENT_KINDS }, allow_nil: true
   validates :raw_payload, presence: true
 
+  validate :validate_starts_at_in_raw_payload
+
   scope :by_start_date, -> {
     order(Arel.sql("(raw_payload->>'starts_at') ASC NULLS LAST"), created_at: :desc)
   }
@@ -71,5 +73,19 @@ class Event < ApplicationRecord
     return if user_id.blank?
 
     event_votes.find_by(user_id: user_id)&.vote_type
+  end
+
+  private
+
+  def validate_starts_at_in_raw_payload
+    return unless raw_payload.is_a?(Hash)
+
+    value = raw_payload["starts_at"]
+    return if value.blank?
+
+    parsed = Time.zone.parse(value.to_s)
+    errors.add(:raw_payload, "contains an invalid starts_at date") if parsed.nil?
+  rescue ArgumentError, TypeError
+    errors.add(:raw_payload, "contains an invalid starts_at date")
   end
 end

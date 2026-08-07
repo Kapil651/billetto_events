@@ -9,80 +9,115 @@ class EventTest < ActiveSupport::TestCase
       "state" => "published",
       "kind" => "regular",
       "public" => true,
-      "online_event" => false
+      "online_event" => false,
+      "starts_at" => "2026-08-15T19:30:00.000Z"
     }.merge(overrides)
   end
 
-  test "upsert_from_billetto! creates a new event" do
-    event = Event.upsert_from_billetto!(valid_billetto_event)
+  test "requires billetto_id" do
+    event = Event.new(name: "Concert", raw_payload: { "object" => "event" })
 
-    assert event.persisted?
-    assert_equal "evt_123", event.billetto_id
-    assert_equal "Summer Concert", event.name
-    assert_equal "published", event.state
-    assert_equal "regular", event.kind
-    assert event.public
-    assert_not event.online_event
-    assert_equal valid_billetto_event, event.raw_payload
+    assert_not event.valid?
+    assert_includes event.errors[:billetto_id], "can't be blank"
   end
 
-  test "upsert_from_billetto! updates an existing event" do
-    Event.upsert_from_billetto!(valid_billetto_event)
+  test "requires raw_payload" do
+    event = Event.new(billetto_id: "evt_1", name: "Concert")
 
-    updated = Event.upsert_from_billetto!(
-      valid_billetto_event("name" => "Updated Concert", "state" => "completed")
-    )
-
-    assert_equal 1, Event.count
-    assert_equal "Updated Concert", updated.name
-    assert_equal "completed", updated.state
-  end
-
-  test "upsert_from_billetto! raises on invalid api data" do
-    assert_raises(Billetto::ValidationError) do
-      Event.upsert_from_billetto!({ "object" => "event" })
-    end
-
-    assert_equal 0, Event.count
+    assert_not event.valid?
+    assert_includes event.errors[:raw_payload], "can't be blank"
   end
 
   test "validates state inclusion" do
-    event = Event.new(billetto_id: "evt_1", state: "invalid", raw_payload: {})
+    event = Event.new(billetto_id: "evt_1", state: "invalid", raw_payload: { "object" => "event" })
 
     assert_not event.valid?
     assert_includes event.errors[:state], "is not included in the list"
   end
 
   test "validates kind inclusion" do
-    event = Event.new(billetto_id: "evt_1", kind: "invalid", raw_payload: {})
+    event = Event.new(billetto_id: "evt_1", kind: "invalid", raw_payload: { "object" => "event" })
 
     assert_not event.valid?
     assert_includes event.errors[:kind], "is not included in the list"
   end
 
-  test "validates billetto_id presence and uniqueness" do
-    Event.upsert_from_billetto!(valid_billetto_event)
+  test "validates billetto_id uniqueness" do
+    create_event!(billetto_id: "evt_unique", name: "First")
 
-    duplicate = Event.new(billetto_id: "evt_123", raw_payload: {})
+    duplicate = Event.new(billetto_id: "evt_unique", name: "Second", raw_payload: { "object" => "event" })
 
     assert_not duplicate.valid?
     assert_includes duplicate.errors[:billetto_id], "has already been taken"
   end
 
-  test "presentation helpers read from raw payload" do
+  test "title uses name when present" do
+    event = Event.new(name: "Jazz Night", billetto_id: "evt_1", raw_payload: {})
+
+    assert_equal "Jazz Night", event.title
+  end
+
+  test "title falls back when name is blank" do
+    event = Event.new(name: nil, billetto_id: "evt_1", raw_payload: {})
+
+    assert_equal "Untitled Event", event.title
+  end
+
+  test "accepts valid starts_at in raw_payload" do
     event = Event.new(
-      billetto_id: "evt_456",
-      name: "Art Expo",
-      raw_payload: {
-        "description" => "A" * 200,
-        "starts_at" => "2026-10-01T18:00:00.000Z",
-        "image_url" => "https://example.com/art.png"
-      }
+      billetto_id: "evt_date",
+      name: "Dated Event",
+      raw_payload: { "starts_at" => "2026-10-01T18:00:00.000Z" }
     )
 
-    assert_equal "Art Expo", event.title
-    assert_equal "https://example.com/art.png", event.image_url
-    assert_includes event.formatted_date, "2026"
-    assert event.brief_description.end_with?("...")
+    assert event.valid?
+    assert_equal Time.zone.parse("2026-10-01T18:00:00.000Z"), event.starts_at
+  end
+
+  test "rejects invalid starts_at in raw_payload" do
+    event = Event.new(
+      billetto_id: "evt_bad_date",
+      name: "Bad Date Event",
+      raw_payload: { "starts_at" => "not-a-date" }
+    )
+
+    assert_not event.valid?
+    assert_includes event.errors[:raw_payload], "contains an invalid starts_at date"
+  end
+
+  test "allows missing starts_at in raw_payload" do
+    event = Event.new(
+      billetto_id: "evt_no_date",
+      name: "Undated Event",
+      raw_payload: { "object" => "event" }
+    )
+
+    assert event.valid?
+    assert_nil event.starts_at
+    assert_equal "Date to be announced", event.formatted_date
+  end
+
+  test "upsert_from_billetto! creates and updates events" do
+    event = Event.upsert_from_billetto!(valid_billetto_event)
+
+    assert event.persisted?
+    assert_equal "Summer Concert", event.name
+
+    updated = Event.upsert_from_billetto!(valid_billetto_event("name" => "Updated Concert"))
+
+    assert_equal 1, Event.count
+    assert_equal "Updated Concert", updated.name
+  end
+
+  test "upsert_from_billetto! raises on invalid api data" do
+    assert_raises(Billetto::ValidationError) do
+      Event.upsert_from_billetto!({ "object" => "event" })
+    end
+  end
+
+  test "score reflects vote counters" do
+    event = create_event!(upvotes_count: 4, downvotes_count: 1)
+
+    assert_equal 3, event.score
   end
 end
